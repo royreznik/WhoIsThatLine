@@ -1,9 +1,11 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from game_logic import select_code_snippet, select_other_members, handle_multiline_comments, handle_multiple_authors
 import random
 
 app = FastAPI()
+templates = Jinja2Templates(directory="templates")
 
 class Answer(BaseModel):
     author: str
@@ -16,6 +18,10 @@ score = 0
 current_snippet = None
 current_author = None
 current_options = []
+
+@app.get("/")
+def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/start")
 def start_game(repo_path: str):

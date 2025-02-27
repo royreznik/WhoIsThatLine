@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who Is That Line?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .code-snippet {
+            background-color: #f7f7f7;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+        }
+        .option {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Who Is That Line?</h1>
+        <div>
+            <label for="repo-path">Repository Path:</label>
+            <input type="text" id="repo-path" placeholder="Enter repository path">
+            <button onclick="startGame()">Start Game</button>
+        </div>
+        <div id="game-container" style="display: none;">
+            <div class="code-snippet" id="code-snippet"></div>
+            <div class="options" id="options"></div>
+            <div id="feedback"></div>
+        </div>
+    </div>
+    <script>
+        async function startGame() {
+            const repoPath = document.getElementById('repo-path').value;
+            const response = await fetch(`/start?repo_path=${repoPath}`);
+            const data = await response.json();
+            document.getElementById('code-snippet').innerText = data.code_snippet.join('\n');
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            data.options.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.className = 'option';
+                button.onclick = () => submitAnswer(option);
+                optionsContainer.appendChild(button);
+            });
+            document.getElementById('game-container').style.display = 'block';
+        }
+
+        async function submitAnswer(author) {
+            const response = await fetch('/answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ author })
+            });
+            const data = await response.json();
+            const feedback = document.getElementById('feedback');
+            if (data.correct) {
+                feedback.innerText = `Correct! Your score is ${data.score}.`;
+            } else {
+                feedback.innerText = `Incorrect. Your score is ${data.score}.`;
+            }
+        }
+    </script>
+</body>
+</html>
