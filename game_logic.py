@@ -1,12 +1,13 @@
 import os
 import random
 import subprocess
+import pathlib
 
 def select_code_snippet(repo_path):
     files = []
     for root, _, filenames in os.walk(repo_path):
         for filename in filenames:
-            if filename.endswith('.py'):
+            if filename.endswith('.go'):
                 files.append(os.path.join(root, filename))
 
     while files:
@@ -34,7 +35,7 @@ def select_code_snippet(repo_path):
     return None, None
 
 def get_authors(file_path, start_line, end_line):
-    result = subprocess.run(['git', 'blame', '-L', f'{start_line + 1},{end_line}', file_path], capture_output=True, text=True)
+    result = subprocess.run(['git', 'blame', '-L', f'{start_line + 1},{end_line}', file_path], cwd=pathlib.Path(file_path).parent, capture_output=True, text=True)
     lines = result.stdout.split('\n')
     authors = set()
     for line in lines:
@@ -44,10 +45,11 @@ def get_authors(file_path, start_line, end_line):
     return list(authors)
 
 def select_other_members(repo_path, author):
-    result = subprocess.run(['git', 'shortlog', '-s', '-n'], capture_output=True, text=True)
+    result = subprocess.run(['git', 'shortlog', '-s', '-n'], cwd=repo_path, capture_output=True, text=True)
     lines = result.stdout.split('\n')
     members = [line.split('\t')[1] for line in lines if line]
-    members.remove(author)
+    if author in members:
+       members.remove(author)
     return random.sample(members, 3)
 
 def handle_multiline_comments(code_snippet):
