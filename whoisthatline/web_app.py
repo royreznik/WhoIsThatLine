@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from game_logic import select_code_snippet, select_other_members, handle_multiline_comments, handle_multiple_authors
+from .game_logic import select_code_snippet, select_other_members, handle_multiline_comments, handle_multiple_authors
 import random
 
 app = FastAPI()
