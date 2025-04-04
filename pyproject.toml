@@ -20,3 +20,5 @@ dev = [
 [tool.ruff.lint]
 select = ["E", "F", "B", "I"]
 
+[tool.mypy]
+strict = true

@@ -1,11 +1,11 @@
 import os
-import pathlib
 import random
 import subprocess
+from pathlib import Path
 
 
-def select_code_snippet(repo_path):
-    files = []
+def select_code_snippet(repo_path: str) -> tuple[list[str] | None, str | None]:
+    files: list[str] = []
     for root, _, filenames in os.walk(repo_path):
         for filename in filenames:
             if filename.endswith(".go"):
@@ -21,7 +21,7 @@ def select_code_snippet(repo_path):
             continue
 
         start_line = random.randint(0, len(lines) - 10)
-        code_snippet = lines[start_line : start_line + 10]
+        code_snippet: list[str] | None = lines[start_line : start_line + 10]
 
         authors = get_authors(file_path, start_line, start_line + 10)
         if len(authors) == 1:
@@ -38,15 +38,15 @@ def select_code_snippet(repo_path):
     return None, None
 
 
-def get_authors(file_path, start_line, end_line):
+def get_authors(file_path: str, start_line: int, end_line: int) -> list[str]:
     result = subprocess.run(
         ["git", "blame", "-L", f"{start_line + 1},{end_line}", file_path],
-        cwd=pathlib.Path(file_path).parent,
+        cwd=Path(file_path).parent,
         capture_output=True,
         text=True,
     )
     lines = result.stdout.split("\n")
-    authors = set()
+    authors: set[str] = set()
     for line in lines:
         if line:
             author = line.split("(")[1].split(" ")[0]
@@ -54,7 +54,7 @@ def get_authors(file_path, start_line, end_line):
     return list(authors)
 
 
-def select_other_members(repo_path, author):
+def select_other_members(repo_path: str, author: str) -> list[str]:
     result = subprocess.run(
         ["git", "shortlog", "-s", "-n"], cwd=repo_path, capture_output=True, text=True
     )
@@ -62,18 +62,20 @@ def select_other_members(repo_path, author):
     members = [line.split("\t")[1] for line in lines if line]
     if author in members:
         members.remove(author)
-    return random.sample(members, 3)
+    return random.sample(members, min(3, len(members)))
 
 
-def handle_multiline_comments(code_snippet):
+def handle_multiline_comments(code_snippet: list[str]) -> list[str]:
     return code_snippet
 
 
-def handle_multiple_authors(repo_path):
+def handle_multiple_authors(repo_path: str) -> tuple[list[str] | None, str | None]:
     return select_code_snippet(repo_path)
 
 
-def select_fewer_lines(file_path, lines, start_line, end_line):
+def select_fewer_lines(
+    file_path: str, lines: list[str], start_line: int, end_line: int
+) -> tuple[list[str] | None, str | None]:
     for length in range(9, 0, -1):
         for i in range(start_line, end_line - length + 1):
             snippet = lines[i : i + length]
