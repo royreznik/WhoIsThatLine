@@ -1,0 +1,32 @@
+fileGroups:
+    source:
+        - whoisthatline/
+        - moon.yml
+        - pyproject.toml
+        - uv.lock
+
+
+tasks:
+  fmt:
+    deps:
+        - ruff-format
+        - ruff-check-fix
+  lint:
+    deps:
+        - ruff-check
+  mypy:
+    command: uv run mypy whoisthatline
+    inputs:
+        - '@group(source)'
+  ruff-check:
+    command: uv run ruff check
+    inputs:
+        - '@group(source)'
+  ruff-format:
+    command: uv run ruff format
+    inputs:
+        - '@group(source)'
+  ruff-check-fix:
+    command: uv run ruff check --fix
+    inputs:
+        - '@group(source)'
