@@ -5,7 +5,6 @@ fileGroups:
         - pyproject.toml
         - uv.lock
 
-
 tasks:
   fmt:
     deps:
@@ -14,6 +13,21 @@ tasks:
   lint:
     deps:
         - ruff-check
+        - mypy
+
+  run-docker:
+    command: docker run -p 8000:8000 --rm royreznik/who-is-that-line:latest
+    deps:
+        - build-image
+    options:
+      persistent: true
+
+  build-image:
+    command: docker build -t royreznik/who-is-that-line:latest .
+    inputs:
+        - '@group(source)'
+        - 'Dockerfile'
+
   mypy:
     command: uv run mypy whoisthatline
     inputs:
